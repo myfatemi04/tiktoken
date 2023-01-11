@@ -1,36 +1,31 @@
 from __future__ import annotations
 
 import base64
-import hashlib
+# import hashlib
 import json
 import os
 import uuid
 
-import blobfile
-import requests
+# import blobfile
+# import requests
 
 
-def read_file(blobpath: str) -> bytes:
-    if not blobpath.startswith("http://") and not blobpath.startswith("https://"):
-        with blobfile.BlobFile(blobpath, "rb") as f:
-            return f.read()
-    # avoiding blobfile for public files helps avoid auth issues, like MFA prompts
-    return requests.get(blobpath).content
+# def read_file(blobpath: str) -> bytes:
+#     if not blobpath.startswith("http://") and not blobpath.startswith("https://"):
+#         with blobfile.BlobFile(blobpath, "rb") as f:
+#             return f.read()
+#     # avoiding blobfile for public files helps avoid auth issues, like MFA prompts
+#     return requests.get(blobpath).content
 
 
 def read_file_cached(blobpath: str) -> bytes:
-    if "TIKTOKEN_CACHE_DIR" in os.environ:
-        cache_dir = os.environ["TIKTOKEN_CACHE_DIR"]
-    elif "DATA_GYM_CACHE_DIR" in os.environ:
-        cache_dir = os.environ["DATA_GYM_CACHE_DIR"]
-    else:
-        cache_dir = "/tmp/data-gym-cache"
+    cache_dir = './tiktoken-files'
 
-    if cache_dir == "":
-        # disable caching
-        return read_file(blobpath)
+    # slugify blobpath
+    cache_key = blobpath.replace('/', '_').replace(':', '_')
+    # print('slugified to', cache_key)
 
-    cache_key = hashlib.sha1(blobpath.encode()).hexdigest()
+    # cache_key = hashlib.sha1(blobpath.encode()).hexdigest()
 
     cache_path = os.path.join(cache_dir, cache_key)
     if os.path.exists(cache_path):
